@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClimaSmart AI</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root{
+      --bg-1: #040d1c;
+      --bg-2: #071c2c;
+      --panel: rgba(12, 25, 40, 0.78);
+      --panel-2: rgba(17, 34, 52, 0.9);
+      --panel-3: rgba(19, 36, 54, 0.82);
+      --line: rgba(120, 164, 210, 0.18);
+      --cyan: #5de0ff;
+      --cyan-2: #8ae3ff;
+      --blue: #67aef7;
+      --blue-2: #59d7ff;
+      --teal: #4be9d8;
+      --warning: #ffaf66;
+      --danger: #ff5b5b;
+      --danger-2: #d93b3b;
+      --text: #e8f3ff;
+      --muted: #9db6d2;
+      --chip: rgba(132, 193, 255, 0.08);
+      --shadow: rgba(0, 0, 0, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-1); color: var(--text); }
+    body{
+      background:
+        linear-gradient(180deg, rgba(6, 18, 31, 0.7), rgba(3, 11, 19, 0.82)),
+        linear-gradient(120deg, rgba(7, 17, 29, 0.72), rgba(4, 11, 19, 0.68)),
+        url("https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1800&q=80") center/cover no-repeat fixed;
+      min-height: 100vh;
+    }
+
+    .page-shell{
+      width: 100%;
+      min-height: 100vh;
+      padding: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .topbar{
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px 0 22px;
+      background: rgba(7, 22, 36, 0.5);
+      border-bottom: 1px solid rgba(149, 191, 234, 0.14);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+
+    .brand{
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 220px;
+    }
+
+    .brand-mark{
+      width: 26px;
+      height: 26px;
+      position: relative;
+      display: inline-block;
+      border-radius: 9px;
+      transform: rotate(45deg);
+      background: linear-gradient(135deg, #7ee9ff, #70a9ff);
+      box-shadow: 0 0 18px rgba(90, 224, 255, 0.7);
+    }
+
+    .brand-mark::before,
+    .brand-mark::after{
+      content: "";
+      position: absolute;
+      inset: 6px;
+      border-radius: 50%;
+      border: 2px solid rgba(8, 26, 41, 0.8);
+      border-top-color: transparent;
+      border-left-color: transparent;
+    }
+
+    .brand-mark::after{
+      transform: scale(0.64);
+      border-top-color: rgba(8, 26, 41, 0.8);
+      border-left-color: rgba(8, 26, 41, 0.8);
+      border-right-color: transparent;
+      border-bottom-color: transparent;
+    }
+
+    .brand-text{
+      letter-spacing: 1.2px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: #d9f4ff;
+      text-transform: uppercase;
+    }
+
+    .nav-menu{
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      flex-wrap: wrap;
+    }
+
+    .nav-link{
+      color: rgba(217, 236, 255, 0.82);
+      text-decoration: none;
+      font-size: 0.9rem;
+      padding: 10px 16px;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      background: transparent;
+      transition: 0.25s ease;
+      white-space: nowrap;
+    }
+
+    .nav-link:hover{
+      background: rgba(124, 196, 255, 0.06);
+      border-color: rgba(122, 203, 255, 0.18);
+    }
+
+    .nav-link.active{
+      background: rgba(92, 176, 255, 0.12);
+      border: 1px solid rgba(106, 214, 255, 0.22);
+      box-shadow: inset 0 0 22px rgba(93, 224, 255, 0.08);
+      color: #f0fbff;
+    }
+
+    .top-actions{
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 280px;
+      justify-content: flex-end;
+    }
+
+    .search{
+      width: 200px;
+      height: 38px;
+      border-radius: 16px;
+      border: 1px solid rgba(122, 206, 255, 0.12);
+      background: rgba(10, 23, 33, 0.45);
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      color: var(--muted);
+      gap: 8px;
+    }
+
+    .search input{
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #dfeeff;
+      font-size: 0.9rem;
+      width: 100%;
+    }
+
+    .search svg{ opacity: 0.8; }
+
+    .user-tag{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 10px 6px 8px;
+      border-radius: 16px;
+      background: rgba(11, 19, 27, 0.28);
+      border: 1px solid rgba(137, 174, 216, 0.12);
+    }
+
+    .avatar{
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #90d7ff, #7c98ff);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 15px rgba(96, 177, 255, 0.45);
+    }
+
+    .avatar::before{
+      content: "";
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.8);
+      top: 5px;
+      left: 8px;
+    }
+
+    .avatar::after{
+      content: "";
+      position: absolute;
+      width: 22px;
+      height: 14px;
+      border-radius: 12px 12px 10px 10px;
+      background: rgba(255,255,255,0.8);
+      bottom: 4px;
+      left: 5px;
+    }
+
+    .user-name{
+      font-size: 0.9rem;
+      color: #ecf6ff;
+      font-weight: 600;
+    }
+
+    .page{
+      display: flex;
+      min-height: calc(100vh - 72px);
+    }
+
+    .sidebar{
+      width: 210px;
+      padding: 24px 16px 20px 16px;
+      background: rgba(9, 18, 27, 0.22);
+      border-right: 1px solid rgba(157, 210, 255, 0.1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .side-section{
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .side-item{
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      color: rgba(217, 235, 255, 0.78);
+      text-decoration: none;
+      background: transparent;
+      border: 1px solid transparent;
+      transition: 0.2s ease;
+      font-size: 0.95rem;
+    }
+
+    .side-item:hover{
+      background: rgba(90, 169, 255, 0.06);
+      border-color: rgba(110, 178, 255, 0.12);
+    }
+
+    .side-item.active{
+      background: rgba(90, 169, 255, 0.12);
+      border: 1px solid rgba(84, 183, 255, 0.2);
+      color: #f2fbff;
+      box-shadow: inset 0 0 20px rgba(93, 224, 255, 0.05);
+    }
+
+    .icon-box{
+      width: 22px;
+      height: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #bfe7ff;
+      opacity: 0.9;
+    }
+
+    .main{
+      flex: 1;
+      padding: 26px 26px 28px 26px;
+    }
+
+    .hero{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .title{
+      font-size: clamp(1.6rem, 2vw, 2.2rem);
+      margin: 0;
+      font-weight: 700;
+      color: #f2fbff;
+      letter-spacing: 0.2px;
+    }
+
+    .date{
+      color: rgba(210, 229, 248, 0.85);
+      font-size: 0.92rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .metrics{
+      display: grid;
+      grid-template-columns: repeat(3, minmax(180px, 1fr));
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .metric-card{
+      background: rgba(12, 26, 39, 0.7);
+      border: 1px solid rgba(133, 173, 210, 0.1);
+      border-radius: 18px;
+      padding: 14px 16px 10px 16px;
+      box-shadow: inset 0 0 28px rgba(93, 224, 255, 0.04);
+      min-height: 112px;
+    }
+
+    .metric-header{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .metric-icon{
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(100, 176, 255, 0.1);
+      border: 1px solid rgba(123, 214, 255, 0.14);
+      color: var(--cyan);
+    }
+
+    .metric-value{
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #eef9ff;
+      margin-top: 8px;
+    }
+
+    .metric-value strong{
+      font-size: clamp(1.4rem, 2vw, 2.2rem);
+      color: #f5fbff;
+      font-weight: 800;
+    }
+
+    .progress{
+      margin-top: 12px;
+      width: 100%;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(121, 167, 214, 0.12);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress > span{
+      display: block;
+      height: 100%;
+      width: 65%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #6ee5ff, #54d1c2, #63ffb3);
+    }
+
+    .chart-panel{
+      background: rgba(11, 25, 38, 0.74);
+      border: 1px solid rgba(134, 181, 217, 0.1);
+      border-radius: 20px;
+      padding: 18px 18px 8px 18px;
+      box-shadow: 0 18px 30px rgba(0, 0, 0, 0.18);
+      margin-bottom: 22px;
+      position: relative;
+    }
+
+    .chart-header{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding: 0 4px;
+    }
+
+    .chart-title{
+      font-size: 1.05rem;
+      color: #edf8ff;
+      font-weight: 700;
+    }
+
+    .chart-select{
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      background: rgba(92, 137, 170, 0.08);
+      border: 1px solid rgba(120, 170, 211, 0.13);
+      border-radius: 12px;
+      color: #e0f4ff;
+      padding: 8px 12px;
+      font-size: 0.88rem;
+      min-width: 170px;
+      justify-content: space-between;
+    }
+
+    .chart-wrap{
+      position: relative;
+      height: 355px;
+      width: 100%;
+    }
+
+    .locations{
+      display: grid;
+      grid-template-columns: repeat(4, minmax(180px, 1fr));
+      gap: 18px;
+    }
+
+    .location-card{
+      background: rgba(11, 27, 40, 0.68);
+      border: 1px solid rgba(131, 171, 210, 0.09);
+      border-radius: 18px;
+      padding: 14px 16px 14px;
+      min-height: 170px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: inset 0 0 18px rgba(93, 224, 255, 0.03);
+    }
+
+    .loc-head{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .loc-title{
+      font-size: 0.98rem;
+      color: #edf8ff;
+      font-weight: 700;
+    }
+
+    .status{
+      border-radius: 999px;
+      padding: 6px 9px;
+      font-size: 0.67rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .status.ok{
+      background: rgba(35, 179, 116, 0.15);
+      color: #66f0ae;
+      border: 1px solid rgba(91, 222, 163, 0.18);
+    }
+
+    .status.alert{
+      background: rgba(255, 166, 61, 0.12);
+      color: #ffc766;
+      border: 1px solid rgba(255, 182, 79, 0.18);
+    }
+
+    .status.critical{
+      background: rgba(255, 91, 91, 0.12);
+      color: #ff8e8e;
+      border: 1px solid rgba(255, 116, 116, 0.18);
+    }
+
+    .loc-temp{
+      display: flex;
+      align-items: end;
+      gap: 8px;
+      margin: 8px 0 12px;
+      font-weight: 800;
+    }
+
+    .loc-temp strong{
+      font-size: clamp(1.3rem, 1.8vw, 2.1rem);
+      color: #f5fbff;
+    }
+
+    .mini-bars{
+      display: flex;
+      gap: 3px;
+      align-items: flex-end;
+      height: 30px;
+      margin-top: 6px;
+    }
+
+    .mini-bars span{
+      display: block;
+      width: 6px;
+      border-radius: 4px 4px 0 0;
+      background: linear-gradient(180deg, var(--cyan), #4ef4da);
+      opacity: 0.9;
+    }
+
+    .loc-btn{
+      appearance: none;
+      border: none;
+      background: rgba(94, 173, 255, 0.08);
+      border: 1px solid rgba(123, 209, 255, 0.14);
+      color: #dff6ff;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .loc-btn:hover{
+      background: rgba(106, 214, 255, 0.15);
+    }
+
+    .voice-panel{
+      position: fixed;
+      right: 26px;
+      bottom: 24px;
+      width: 320px;
+      border-radius: 180px 180px 22px 22px;
+      background: rgba(11, 21, 29, 0.5);
+      border: 1px solid rgba(118, 203, 255, 0.16);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 0 0 1px rgba(103, 214, 255, 0.08), 0 18px 32px rgba(0,0,0,0.26);
+      overflow: hidden;
+      z-index: 100;
+    }
+
+    .voice-inner{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 18px 16px 14px;
+      position: relative;
+    }
+
+    .voice-face{
+      width: 124px;
+      height: 124px;
+      border-radius: 50%;
+      border: 2px solid rgba(119, 224, 255, 0.8);
+      background: radial-gradient(circle at 35% 30%, rgba(138, 233, 255, 0.26), rgba(35, 90, 118, 0.08) 55%, rgba(11, 20, 31, 0.65) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 28px rgba(65, 218, 255, 0.35);
+      margin-bottom: 14px;
+      position: relative;
+    }
+
+    .voice-face::before{
+      content: "";
+      position: absolute;
+      inset: 14px;
+      border-radius: 50%;
+      border: 1px solid rgba(126, 224, 255, 0.15);
+      box-shadow: inset 0 0 30px rgba(101,230,255,0.12);
+    }
+
+    .mic{
+      width: 40px;
+      height: 60px;
+      border-radius: 18px;
+      border: 3px solid var(--cyan);
+      position: relative;
+      background: rgba(18, 42, 52, 0.6);
+      box-shadow: 0 0 18px rgba(48, 205, 255, 0.3);
+    }
+
+    .mic::before{
+      content: "";
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--cyan);
+      left: 50%;
+      transform: translateX(-50%);
+      top: 10px;
+      box-shadow: 0 0 12px rgba(93, 224, 255, 0.6);
+    }
+
+    .mic::after{
+      content: "";
+      position: absolute;
+      width: 26px;
+      height: 22px;
+      border: 3px solid rgba(93, 224, 255, 0.9);
+      border-color: rgba(93, 224, 255, 0.95) transparent transparent transparent;
+      border-radius: 18px 18px 0 0;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: -12px;
+    }
+
+    .voice-waves{
+      position: absolute;
+      width: 110px;
+      height: 42px;
+      bottom: 32px;
+      pointer-events: none;
+      display: flex;
+      justify-content: center;
+      align-items: end;
+      gap: 5px;
+    }
+
+    .voice-waves span{
+      display: block;
+      width: 5px;
+      border-radius: 4px;
+      background: linear-gradient(180deg, rgba(102, 220, 255, 0.2), rgba(110, 234, 255, 0.9));
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    .voice-waves span:nth-child(1){ height: 18px; animation-delay: 0s; }
+    .voice-waves span:nth-child(2){ height: 26px; animation-delay: 0.15s; }
+    .voice-waves span:nth-child(3){ height: 34px; animation-delay: 0.3s; }
+    .voice-waves span:nth-child(4){ height: 42px; animation-delay: 0.45s; }
+    .voice-waves span:nth-child(5){ height: 28px; animation-delay: 0.6s; }
+
+    @keyframes pulse{
+      0%,100% { transform: scaleY(0.7); opacity: 0.55; }
+      50% { transform: scaleY(1); opacity: 1; }
+    }
+
+    .voice-copy{
+      text-align: center;
+      margin-top: 2px;
+      margin-bottom: 8px;
+    }
+
+    .voice-copy h3{
+      margin: 0 0 8px;
+      font-size: 1.05rem;
+      letter-spacing: 0.06em;
+      color: #daefff;
+      text-transform: uppercase;
+    }
+
+    .voice-copy p{
+      margin: 0;
+      color: rgba(215, 234, 255, 0.82);
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+
+    .voice-btn{
+      margin-top: 10px;
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      background: rgba(82, 200, 255, 0.12);
+      border: 1px solid rgba(117, 220, 255, 0.2);
+      color: #f1fbff;
+      padding: 11px 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .voice-btn:hover{
+      background: rgba(82, 200, 255, 0.18);
+    }
+
+    .alerta-umidade{
+      display: none;
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      width: 100%;
+      background: linear-gradient(90deg, #b41414, #d62f2f 55%, #ef4c4c);
+      color: white;
+      text-align: center;
+      padding: 12px 18px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      font-size: 0.96rem;
+      box-shadow: 0 8px 22px rgba(192, 30, 30, 0.28);
+      border-bottom: 1px solid rgba(255,255,255,0.14);
+    }
+
+    .alerta-umidade.show{
+      display: block;
+    }
+
+    @media (max-width: 1100px){
+      .page{ display: block; }
+      .sidebar{
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid rgba(157, 210, 255, 0.1);
+      }
+      .locations{
+        grid-template-columns: repeat(2, minmax(180px, 1fr));
+      }
+      .metrics{
+        grid-template-columns: repeat(2, minmax(180px, 1fr));
+      }
+      .voice-panel{
+        position: static;
+        width: 100%;
+        max-width: 360px;
+        margin: 20px auto 0 auto;
+      }
+    }
+
+    @media (max-width: 760px){
+      .topbar{
+        flex-wrap: wrap;
+        height: auto;
+        padding: 12px 14px;
+      }
+      .nav-menu{
+        order: 3;
+        justify-content: flex-start;
+        overflow-x: auto;
+        width: 100%;
+      }
+      .top-actions{
+        width: 100%;
+        justify-content: space-between;
+      }
+      .search{
+        flex: 1;
+        min-width: 140px;
+      }
+      .metrics,
+      .locations{
+        grid-template-columns: 1fr;
+      }
+      .hero{
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <div id="alerta-umidade" class="alerta-umidade" role="alert" aria-live="assertive">
+      Atenção: Umidade Crítica! Risco à saúde.
+    </div>
+
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark"></span>
+        <span class="brand-text">CLIMASMART AI</span>
+      </div>
+
+      <nav class="nav-menu" aria-label="Navegação principal">
+        <a class="nav-link active" href="#">Dashboard</a>
+        <a class="nav-link" href="#">Locais</a>
+        <a class="nav-link" href="#">Relatórios</a>
+        <a class="nav-link" href="#">Alertas</a>
+        <a class="nav-link" href="#">Configurações</a>
+      </nav>
+
+      <div class="top-actions">
+        <div class="search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2"></circle>
+            <path d="M16 16L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+          </svg>
+          <input type="text" value="Busquem" aria-label="Busca" />
+        </div>
+
+        <div class="user-tag">
+          <div class="avatar" aria-hidden="true"></div>
+          <span class="user-name">Maria Silva</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="page">
+      <aside class="sidebar">
+        <div class="side-section">
+          <a href="#" class="side-item">
+            <span class="icon-box">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H18.5A1.5 1.5 0 0 1 20 5.5V18.5A1.5 1.5 0 0 1 18.5 20H5.5A1.5 1.5 0 0 1 4 18.5V5.5Z" stroke="currentColor" stroke-width="1.8"/><path d="M8 8H16M8 12H16M8 16H13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </span>
+            Painel Geral
+          </a>
+
+          <a href="#" class="side-item">
+            <span class="icon-box">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 21C16.6 17.4 19 14.7 19 10.8A4.7 4.7 0 0 0 14.3 6A4.1 4.1 0 0 0 12 7.2A4.1 4.1 0 0 0 9.7 6A4.7 4.7 0 0 0 5 10.8C5 14.7 7.4 17.4 12 21Z" stroke="currentColor" stroke-width="1.8"/></svg>
+            </span>
+            Locais
+          </a>
+
+          <a href="#" class="side-item active">
+            <span class="icon-box">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 4V12L16 14M21 12A9 9 0 1 1 3 12A9 9 0 0 1 21 12Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </span>
+            Alertas
+          </a>
+
+          <a href="#" class="side-item">
+            <span class="icon-box">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3.5L19 7V11.5C19 16.1 16.1 19.8 12 21C7.9 19.8 5 16.1 5 11.5V7L12 3.5Z" stroke="currentColor" stroke-width="1.8"/><path d="M12 8V12.5M12 16H12.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </span>
+            Atualizações Recentes
+          </a>
+
+          <a href="#" class="side-item">
+            <span class="icon-box">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M7 5V19M17 5V19M5 8H19M5 16H19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </span>
+            Tabela de Mudanças de Temperatura
+          </a>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="hero">
+          <h1 class="title">Temperatura Gráfico</h1>
+          <div class="date">Seg. 21 Set 2026, 14:11 Teresina, BR</div>
+        </div>
+
+        <section class="metrics">
+          <article class="metric-card">
+            <div class="metric-header">
+              <span>Temperatura Atual</span>
+              <span class="metric-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M14 4.5A3 3 0 0 0 12 3A3 3 0 0 0 9 6V13.5A5 5 0 1 0 15 13.5V6A3 3 0 0 0 14 4.5Z" stroke="currentColor" stroke-width="1.8"/><path d="M12 9V15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </span>
+            </div>
+            <div class="metric-value">
+              <span>Teresina:</span>
+              <strong>28°C</strong>
+            </div>
+            <div class="progress"><span></span></div>
+          </article>
+
+          <article class="metric-card">
+            <div class="metric-header">
+              <span>Média Diária</span>
+              <span class="metric-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 16V10M10 16V7M15 16V13M20 16V5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </span>
+            </div>
+            <div class="metric-value">
+              <strong>26.5°C</strong>
+            </div>
+          </article>
+
+          <article class="metric-card">
+            <div class="metric-header">
+              <span>Umidade</span>
+              <span class="metric-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 3.5C9 6.7 6.5 9.4 6.5 13A5.5 5.5 0 0 0 17.5 13C17.5 9.4 15 6.7 12 3.5Z" stroke="currentColor" stroke-width="1.8"/><path d="M12 10.5C10.7 10.5 9.7 11.5 9.7 12.8C9.7 14.1 10.7 15.1 12 15.1C13.3 15.1 14.3 14.1 14.3 12.8C14.3 11.5 13.3 10.5 12 10.5Z" stroke="currentColor" stroke-width="1.8"/></svg>
+              </span>
+            </div>
+            <div class="metric-value">
+              <strong id="umidade-atual">68%</strong>
+            </div>
+          </article>
+        </section>
+
+        <section class="chart-panel">
+          <div class="chart-header">
+            <div class="chart-title">Monitoramento de Temperatura - Últimas 24h</div>
+            <div class="chart-select">
+              <span>Temperatura</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M8 10L12 14L16 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="tempChart"></canvas>
+          </div>
+        </section>
+
+        <section class="locations">
+          <article class="location-card">
+            <div class="loc-head">
+              <span class="loc-title">Centro de Dados</span>
+              <span class="status ok">OK</span>
+            </div>
+            <div class="loc-temp"><strong>22.3°C</strong></div>
+            <div class="mini-bars">
+              <span style="height: 10px;"></span>
+              <span style="height: 18px;"></span>
+              <span style="height: 13px;"></span>
+              <span style="height: 22px;"></span>
+              <span style="height: 16px;"></span>
+              <span style="height: 25px;"></span>
+              <span style="height: 19px;"></span>
+            </div>
+            <button class="loc-btn">Detalhes</button>
+          </article>
+
+          <article class="location-card">
+            <div class="loc-head">
+              <span class="loc-title">Escritório Central</span>
+              <span class="status alert">Alerta</span>
+            </div>
+            <div class="loc-temp"><strong>24.1°C</strong></div>
+            <div class="mini-bars">
+              <span style="height: 14px;"></span>
+              <span style="height: 17px;"></span>
+              <span style="height: 19px;"></span>
+              <span style="height: 24px;"></span>
+              <span style="height: 20px;"></span>
+              <span style="height: 27px;"></span>
+              <span style="height: 18px;"></span>
+            </div>
+            <button class="loc-btn">Detalhes</button>
+          </article>
+
+          <article class="location-card">
+            <div class="loc-head">
+              <span class="loc-title">Estufa Agrícola</span>
+              <span class="status critical">Crítico</span>
+            </div>
+            <div class="loc-temp"><strong>29.5°C</strong></div>
+            <div class="mini-bars">
+              <span style="height: 18px;"></span>
+              <span style="height: 20px;"></span>
+              <span style="height: 27px;"></span>
+              <span style="height: 24px;"></span>
+              <span style="height: 31px;"></span>
+              <span style="height: 22px;"></span>
+              <span style="height: 30px;"></span>
+            </div>
+            <button class="loc-btn">Detalhes</button>
+          </article>
+
+          <article class="location-card">
+            <div class="loc-head">
+              <span class="loc-title">Reservatório Água</span>
+              <span class="status ok">OK</span>
+            </div>
+            <div class="loc-temp"><strong>20.0°C</strong></div>
+            <div class="mini-bars">
+              <span style="height: 12px;"></span>
+              <span style="height: 13px;"></span>
+              <span style="height: 17px;"></span>
+              <span style="height: 22px;"></span>
+              <span style="height: 15px;"></span>
+              <span style="height: 20px;"></span>
+              <span style="height: 12px;"></span>
+            </div>
+            <button class="loc-btn">Detalhes</button>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <aside class="voice-panel" aria-label="Assistente de IA">
+      <div class="voice-inner">
+        <div class="voice-face">
+          <div class="mic"></div>
+          <div class="voice-waves">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+
+        <div class="voice-copy">
+          <h3>AURA - Sua IA Assistente</h3>
+          <p>Olá Maria! Como base no gráfico, a temperatura subiu 2°C na Estufa nas últimas 2 horas. Deseja que eu ajuste o condicionador?</p>
+        </div>
+
+        <button class="voice-btn">Sim, Ajustar</button>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    const alertBox = document.getElementById("alerta-umidade");
+    const umidadeAtualEl = document.getElementById("umidade-atual");
+
+    function atualizarAlertaUmidade(dadosRecentes) {
+      if (!dadosRecentes || typeof dadosRecentes.umidade === "undefined") return;
+
+      const umidade = Number(dadosRecentes.umidade);
+
+      if (umidade < 30) {
+        alertBox.classList.add("show");
+      } else {
+        alertBox.classList.remove("show");
+      }
+
+      if (umidadeAtualEl) {
+        umidadeAtualEl.textContent = `${Math.round(umidade)}%`;
+      }
+    }
+
+    // Exemplo com dados em tempo real
+    const dadosRecentes = { umidade: 68 };
+
+    atualizarAlertaUmidade(dadosRecentes);
+
+    // Simulação de atualização em tempo real
+    setInterval(() => {
+      const novaUmidade = 18 + Math.random() * 55;
+      dadosRecentes.umidade = novaUmidade;
+      atualizarAlertaUmidade(dadosRecentes);
+    }, 5000);
+
+    // Se você estiver usando Firebase:
+    // firebase.database().ref("sensor").on("value", (snapshot) => {
+    //   const dadosRecentes = snapshot.val();
+    //   atualizarAlertaUmidade(dadosRecentes);
+    // });
+
+    const labels = ["00h","02h","04h","06h","08h","10h","12h","14h","16h","18h","20h","22h"];
+    const temps = [21.8, 22.8, 24.1, 25.0, 23.0, 21.5, 22.0, 29.5, 28.2, 27.0, 25.6, 23.8];
+
+    const ctx = document.getElementById("tempChart").getContext("2d");
+
+    const gradient = ctx.createLinearGradient(0, 0, 0, 360);
+    gradient.addColorStop(0, "rgba(111, 208, 255, 0.45)");
+    gradient.addColorStop(0.55, "rgba(115, 155, 255, 0.20)");
+    gradient.addColorStop(1, "rgba(255, 150, 100, 0.02)");
+
+    new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [{
+          label: "Temperatura",
+          data: temps,
+          borderColor: "#6ee8ff",
+          backgroundColor: gradient,
+          borderWidth: 3,
+          pointBackgroundColor: "#f6fbff",
+          pointBorderColor: "#5de2ff",
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          tension: 0.38,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: 'nearest',
+          intersect: false
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: "rgba(8, 18, 28, 0.95)",
+            titleColor: "#eaf6ff",
+            bodyColor: "#d8ebff",
+            borderColor: "rgba(118, 202, 255, 0.2)",
+            borderWidth: 1,
+            displayColors: false
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              color: "rgba(130, 180, 220, 0.08)",
+              drawBorder: false
+            },
+            ticks: {
+              color: "rgba(207, 227, 246, 0.8)"
+            }
+          },
+          y: {
+            min: 18,
+            max: 33,
+            grid: {
+              color: "rgba(130, 180, 220, 0.08)",
+              drawBorder: false
+            },
+            ticks: {
+              color: "rgba(207, 227, 246, 0.8)",
+              callback: function(value) {
+                return value + "°C";
+              }
+            }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
